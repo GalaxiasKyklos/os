@@ -28,6 +28,16 @@ COPY zfs-rpms /tmp/zfs-prebuilt
 # When ZFS is disabled, produce an empty RPM directory instead.
 RUN if [ "${ENABLE_ZFS}" = "true" ]; then /tmp/build-zfs.sh; else mkdir -p /var/cache/zfs-rpms; fi
 
+# Throwaway stage that compiles the keychron_battery kmod against the base
+# image kernel. DKMS cannot rebuild modules on an image based system.
+FROM ghcr.io/ublue-os/${SOURCE_IMAGE}:${SOURCE_TAG} AS keychron-battery-builder
+
+COPY build-keychron-battery.sh /tmp/build-keychron-battery.sh
+# Vendored module source, see patches/keykron-battery-module.
+COPY patches/keykron-battery-module /tmp/keychron-battery-src
+
+RUN /tmp/build-keychron-battery.sh
+
 FROM ghcr.io/ublue-os/${SOURCE_IMAGE}:${SOURCE_TAG}
 
 ARG IMAGE_VARIANT
@@ -39,6 +49,7 @@ COPY root/ /
 COPY build.sh /tmp/build.sh
 COPY kwin-scripts /tmp/kwin-scripts
 COPY --from=zfs-builder /var/cache/zfs-rpms /tmp/zfs-rpms
+COPY --from=keychron-battery-builder /var/cache/keychron-battery /tmp/keychron-battery
 
 RUN mkdir -p /var/lib/alternatives && \
     cd /tmp/ && \
