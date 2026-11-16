@@ -113,6 +113,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          ENABLE_ZFS="$(sed -n 's/^ARG ENABLE_ZFS="\(.*\)"/\1/p' Containerfile)"
+          echo "enabled=${ENABLE_ZFS}" >> "$GITHUB_OUTPUT"
+          if [[ "${ENABLE_ZFS}" != "true" ]]; then
+            echo "ZFS is disabled; building from stable."
+            echo "source_tag=stable" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           BASE="docker://ghcr.io/ublue-os/${{ matrix.source_image }}:stable"
           INSPECT="$(skopeo inspect --no-tags "${BASE}")"
           KERNEL="$(jq -r '.Labels["ostree.linux"] // empty' <<< "${INSPECT}")"
@@ -126,6 +133,7 @@ jobs:
 
       - name: Restore cached ZFS RPMs
         id: zfs-cache
+        if: steps.zfs-key.outputs.enabled == 'true'
         uses: actions/cache/restore@v4
         with:
           path: zfs-rpms/*.rpm
@@ -134,7 +142,7 @@ jobs:
       # On a cache miss, build only the zfs-builder stage and extract its RPMs so
       # they can be cached and reused by the image build below.
       - name: Build ZFS RPMs
-        if: steps.zfs-cache.outputs.cache-hit != 'true'
+        if: steps.zfs-key.outputs.enabled == 'true' && steps.zfs-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -151,7 +159,7 @@ jobs:
           ls -l zfs-rpms/
 
       - name: Save ZFS RPMs to cache
-        if: steps.zfs-cache.outputs.cache-hit != 'true'
+        if: steps.zfs-key.outputs.enabled == 'true' && steps.zfs-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: zfs-rpms/*.rpm

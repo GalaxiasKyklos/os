@@ -6,6 +6,9 @@ RELEASE="$(rpm -E %fedora)"
 # Which hardware variant is being built: "default" (AMD/Intel) or "nvidia".
 IMAGE_VARIANT="${IMAGE_VARIANT:-default}"
 
+# Whether to install the ZFS RPMs built by the zfs-builder stage.
+ENABLE_ZFS="${ENABLE_ZFS:-false}"
+
 # Install Microsoft repos for VSCode
 sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
 
@@ -18,15 +21,17 @@ fi
 
 dnf5 install -y "${PACKAGES[@]}"
 
-# ZFS: kmod plus userland tools built against this image's kernel by the
-# zfs-builder stage. Pools are imported and mounted manually, not at boot.
-dnf5 install -y /tmp/zfs-rpms/*.rpm
+if [ "${ENABLE_ZFS}" = "true" ]; then
+    # ZFS: kmod plus userland tools built against this image's kernel by the
+    # zfs-builder stage. Pools are imported and mounted manually, not at boot.
+    dnf5 install -y /tmp/zfs-rpms/*.rpm
 
-KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
-depmod -a "${KERNEL_VERSION}"
+    KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
+    depmod -a "${KERNEL_VERSION}"
 
-# Load the module at boot so pools can be imported without manual modprobe.
-echo "zfs" > /etc/modules-load.d/zfs.conf
+    # Load the module at boot so pools can be imported without manual modprobe.
+    echo "zfs" > /etc/modules-load.d/zfs.conf
+fi
 
 ls -lar
 
