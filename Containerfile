@@ -1,9 +1,6 @@
-ARG SOURCE_IMAGE="bazzite"
+# Bazzite with the GNOME desktop and the Nvidia open kernel modules.
+ARG SOURCE_IMAGE="bazzite-gnome-nvidia-open"
 ARG SOURCE_TAG="stable"
-
-# Selects the hardware specific customizations applied by build.sh.
-# "default" targets the AMD/Intel image, "nvidia" targets bazzite-nvidia-open.
-ARG IMAGE_VARIANT="default"
 
 # Set to "true" to build and install ZFS. Disabled while no OpenZFS release
 # supports the kernel shipped by Bazzite stable.
@@ -40,20 +37,18 @@ RUN /tmp/build-keychron-battery.sh
 
 FROM ghcr.io/ublue-os/${SOURCE_IMAGE}:${SOURCE_TAG}
 
-ARG IMAGE_VARIANT
 ARG ENABLE_ZFS
 
 # Files under root/ are copied as-is onto the image filesystem.
 COPY root/ /
 
 COPY build.sh /tmp/build.sh
-COPY kwin-scripts /tmp/kwin-scripts
 COPY --from=zfs-builder /var/cache/zfs-rpms /tmp/zfs-rpms
 COPY --from=keychron-battery-builder /var/cache/keychron-battery /tmp/keychron-battery
 
 RUN mkdir -p /var/lib/alternatives && \
     cd /tmp/ && \
-    IMAGE_VARIANT="${IMAGE_VARIANT}" ENABLE_ZFS="${ENABLE_ZFS}" /tmp/build.sh && \
+    ENABLE_ZFS="${ENABLE_ZFS}" /tmp/build.sh && \
     bootc container lint
 
 ## NOTES:
