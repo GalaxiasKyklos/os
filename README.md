@@ -6,7 +6,7 @@ drivers, based on
 (Nvidia open kernel modules, for RTX 20xx / GTX 16xx and newer GPUs).
 
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/philip-scott/os
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/galaxiaskyklos/os
 ```
 
 Switching from a KDE image to this GNOME image keeps your home directory, but
@@ -31,7 +31,7 @@ This image bundles OpenZFS so ZFS pools (for example a drive holding a
 > [!IMPORTANT]
 > ZFS is currently **disabled** (`ARG ENABLE_ZFS="false"` in the `Containerfile`)
 > because Bazzite `stable` ships Linux 7.3 and no OpenZFS release supports it
-> yet. While disabled, the ZFS build and CI cache steps are skipped and both
+> yet. While disabled, the ZFS build and CI cache steps are skipped and the
 > image is built from `stable`. Set `ENABLE_ZFS` to `"true"` to re-enable it.
 
 Universal Blue only publishes prebuilt ZFS kmods for the `coreos-stable`,
