@@ -1,24 +1,16 @@
 # OS
 
-Two images are built from this repository:
-
-| Image | Base | Intended hardware |
-| --- | --- | --- |
-| `ghcr.io/philip-scott/os` | [`bazzite`](https://github.com/ublue-os/bazzite/pkgs/container/bazzite) | AMD/Intel GPUs |
-| `ghcr.io/philip-scott/os-nvidia` | [`bazzite-nvidia-open`](https://github.com/ublue-os/bazzite/pkgs/container/bazzite-nvidia-open) | Nvidia GPUs (open kernel modules) |
-
-Both images share the same `Containerfile` and `build.sh`; the workflow builds
-them in a matrix, passing `SOURCE_IMAGE` and `IMAGE_VARIANT` as build args. The
-Nvidia image skips the ROCm packages (`rocm-smi`, `rocm-hip`, `rocm-opencl`,
-`rocminfo`), which are only useful on AMD GPUs.
+A custom [Bazzite](https://bazzite.gg/) image with the GNOME desktop and Nvidia
+drivers, based on
+[`bazzite-gnome-nvidia-open`](https://github.com/ublue-os/bazzite/pkgs/container/bazzite-gnome-nvidia-open)
+(Nvidia open kernel modules, for RTX 20xx / GTX 16xx and newer GPUs).
 
 ```bash
-# AMD/Intel
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/philip-scott/os
-
-# Nvidia
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/philip-scott/os-nvidia
 ```
+
+Switching from a KDE image to this GNOME image keeps your home directory, but
+KDE settings and the display manager configuration do not carry over.
 
 # Image layers
 
@@ -40,7 +32,7 @@ This image bundles OpenZFS so ZFS pools (for example a drive holding a
 > ZFS is currently **disabled** (`ARG ENABLE_ZFS="false"` in the `Containerfile`)
 > because Bazzite `stable` ships Linux 7.3 and no OpenZFS release supports it
 > yet. While disabled, the ZFS build and CI cache steps are skipped and both
-> images are built from `stable`. Set `ENABLE_ZFS` to `"true"` to re-enable it.
+> image is built from `stable`. Set `ENABLE_ZFS` to `"true"` to re-enable it.
 
 Universal Blue only publishes prebuilt ZFS kmods for the `coreos-stable`,
 `coreos-testing`, `longterm` and `centos` kernel flavors, and Bazzite ships the
