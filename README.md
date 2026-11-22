@@ -31,7 +31,7 @@ This image bundles OpenZFS so ZFS pools (for example a drive holding a
 > [!IMPORTANT]
 > ZFS is currently **disabled** (`ARG ENABLE_ZFS="false"` in the `Containerfile`)
 > because Bazzite `stable` ships Linux 7.3 and no OpenZFS release supports it
-> yet. While disabled, the ZFS build and CI cache steps are skipped and both
+> yet. While disabled, the ZFS build and CI cache steps are skipped and the
 > image is built from `stable`. Set `ENABLE_ZFS` to `"true"` to re-enable it.
 
 Universal Blue only publishes prebuilt ZFS kmods for the `coreos-stable`,
