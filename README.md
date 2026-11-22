@@ -6,7 +6,7 @@ drivers, based on
 (Nvidia open kernel modules, for RTX 20xx / GTX 16xx and newer GPUs).
 
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/philip-scott/os
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/galaxiaskyklos/os
 ```
 
 Switching from a KDE image to this GNOME image keeps your home directory, but
