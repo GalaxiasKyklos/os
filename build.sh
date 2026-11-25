@@ -9,7 +9,7 @@ ENABLE_ZFS="${ENABLE_ZFS:-false}"
 # Install Microsoft repos for VSCode
 sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
 
-PACKAGES=(screen conky pass htop code azure-cli gh obs-studio autofs okteta mkvtoolnix docker docker-compose nethogs restic)
+PACKAGES=(screen conky pass htop code azure-cli gh obs-studio autofs okteta mkvtoolnix docker docker-compose nethogs restic inotify-tools libnotify)
 
 dnf5 install -y "${PACKAGES[@]}"
 
@@ -48,10 +48,20 @@ if grep -rA5 --include=tuned.conf '^\[audio\]' /usr/lib/tuned | grep -E 'timeout
     exit 1
 fi
 
+# AppImage integrator (vendored in appimage-integrator/): every user gets an
+# ~/Applications folder whose AppImages are added to the application menu.
+# The config and user unit come from root/.
+install -d /usr/libexec/appimage-integrator
+install -m755 /tmp/appimage-integrator/src/appimage-integrator-* /usr/libexec/appimage-integrator/
+install -m644 /tmp/appimage-integrator/src/*.sh /tmp/appimage-integrator/src/messages.*_* /usr/libexec/appimage-integrator/
+install -Dm644 /tmp/appimage-integrator/LICENSE /usr/share/licenses/appimage-integrator/LICENSE
+install -d -m755 /etc/skel/Applications
+systemctl --global enable appimage-integrator.service
+
 ls -lar
 
 systemctl enable podman.socket
 
 dnf5 clean all
-rm -rf /tmp/zfs-rpms /tmp/keychron-battery
+rm -rf /tmp/zfs-rpms /tmp/keychron-battery /tmp/appimage-integrator
 rm -f /tmp/build.sh
